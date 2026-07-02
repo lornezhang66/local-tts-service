@@ -1,0 +1,17 @@
+# 缩小构建上下文、避免把运行期凭证/本地缓存发到 Docker daemon
+.venv/
+__pycache__/
+*.pyc
+data/
+.smoke_data/
+# 根级旧配置/测试残留不入镜像（运行期配置在 data/，由容器首次启动生成）
+/config.json
+/test-output.wav
+# 元数据/文档不入镜像层
+.git/
+.gitignore
+.dockerignore
+README.md
+CLAUDE.md
+.claude/
+# 重要：models/ 必须保留——build 脚本会把模型拷到此处，Dockerfile 再 COPY models/ 进镜像

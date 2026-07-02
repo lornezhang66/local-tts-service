@@ -1,0 +1,16 @@
+{
+  "service_url": "http://127.0.0.1:8787",
+  "api_key": "",
+  "enabled": true,
+  "cooldown_seconds": 6,
+  "messages": {
+    "codex.SessionStart": "Codex 已启动。",
+    "codex.PermissionRequest": "Codex 需要你批准权限。",
+    "codex.Notification": "Codex 有新的通知。",
+    "codex.Stop": "Codex 已完成当前任务。",
+    "claude.SessionStart": "Claude Code 已启动。",
+    "claude.PermissionRequest": "Claude Code 需要你批准权限。",
+    "claude.Notification": "Claude Code 有新的通知。",
+    "claude.Stop": "Claude Code 已完成当前任务。"
+  }
+}

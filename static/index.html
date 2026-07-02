@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>本地 TTS 服务</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      background: #f6f7f2;
+      color: #202124;
+    }
+    body { margin: 0; }
+    header { background: #244b46; color: #fff; }
+    header .inner {
+      max-width: 1040px; margin: 0 auto; padding: 12px 18px;
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+    h1 { margin: 0; font-size: 20px; }
+    nav { display: flex; gap: 6px; flex-wrap: wrap; }
+    nav button {
+      background: rgba(255,255,255,.12); color: #fff; border: none;
+      padding: 8px 14px; border-radius: 6px; cursor: pointer; font: inherit;
+    }
+    nav button.active { background: #fff; color: #244b46; font-weight: 600; }
+    .auth-right { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .auth-right input {
+      background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.25);
+      padding: 6px 9px; border-radius: 6px; width: 120px;
+    }
+    .auth-right input::placeholder { color: rgba(255,255,255,.65); }
+    .auth-right button { background: rgba(255,255,255,.92); color: #244b46; }
+    main { max-width: 1040px; margin: 0 auto; padding: 20px 18px 60px; }
+    section { display: none; border-top: 1px solid #d9dbd1; margin-top: 18px; padding-top: 18px; }
+    section.active { display: block; }
+    h2 { font-size: 16px; margin: 22px 0 8px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    label { display: grid; gap: 5px; font-size: 13px; }
+    label.checkbox-row { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+    input, textarea, button { font: inherit; border: 1px solid #c9cbc2; border-radius: 6px; background: #fff; color: #202124; }
+    input { padding: 7px 9px; }
+    input:disabled { background: #eef0e9; color: #5f6b65; }
+    textarea { min-height: 120px; padding: 9px; resize: vertical; }
+    button.primary { padding: 9px 16px; background: #244b46; color: #fff; border: none; cursor: pointer; }
+    button.primary:disabled { opacity: .55; cursor: wait; }
+    button.small { padding: 4px 10px; font-size: 12px; background: #fff; cursor: pointer; }
+    button.small.danger { color: #b00020; border-color: #e3b4b4; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+    .status { color: #52605b; font-size: 13px; }
+    .muted { color: #5f6b65; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { border: 1px solid #dfe1d8; padding: 6px 9px; text-align: left; vertical-align: top; }
+    th { background: #eef0e9; }
+    .cards { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .card { border: 1px solid #dfe1d8; border-radius: 8px; padding: 10px 14px; min-width: 150px; background: #fff; }
+    .card .n { font-size: 20px; font-weight: 600; }
+    .card .l { font-size: 12px; color: #5f6b65; margin-top: 2px; }
+    .locked { background: #fff8e1; border: 1px solid #ecdf9a; color: #6a5b1a; padding: 14px 16px; border-radius: 8px; }
+    .hidden { display: none !important; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .auth-right { margin-left: 0; width: 100%; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner">
+      <h1>本地 TTS 服务</h1>
+      <nav>
+        <button data-tab="synth" class="active">试听</button>
+        <button data-tab="config">配置</button>
+        <button data-tab="admin">接入管理</button>
+      </nav>
+      <div class="auth-right" id="authArea">
+        <input id="loginUser" placeholder="用户名" autocomplete="username">
+        <input id="loginPass" type="password" placeholder="密码" autocomplete="current-password">
+        <button id="login" class="small">登录</button>
+        <span id="loginStatus" class="status"></span>
+      </div>
+      <div class="auth-right hidden" id="userArea">
+        <span class="muted">已登录：</span><span id="welcome"></span>
+        <button id="logout" class="small">注销</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 试听 -->
+    <section id="tab-synth" class="active">
+      <p class="muted">朗读文本不出本机。API Key 在「接入管理」创建；首次启动的默认 Key 见服务启动日志或 <code>data/first-run-credentials.txt</code>。</p>
+      <label>API Key（用于鉴权，仅存本浏览器）
+        <input id="synthKey" type="password" placeholder="tts-...">
+      </label>
+      <label>试听文本
+        <textarea id="text">这是本地 Matcha 双语 TTS 服务。今天是 2026 年 7 月 2 日，API endpoint is running on localhost port 8787。</textarea>
+      </label>
+      <div class="row">
+        <button id="synthesize" class="primary">合成试听</button>
+        <span id="synthStatus" class="status"></span>
+      </div>
+      <audio id="audio" controls></audio>
+    </section>
+
+    <!-- 配置 -->
+    <section id="tab-config">
+      <div id="configLocked" class="locked">请先在右上角登录后再查看和修改配置。</div>
+      <div id="configForm" class="hidden">
+        <div class="grid">
+          <label>Host <input id="host"></label>
+          <label>Port <input id="port" type="number"></label>
+          <label>Model folder <input id="model_dir"></label>
+          <label>Vocoder <input id="vocoder"></label>
+          <label>Threads <input id="threads" type="number" min="1" max="16"></label>
+          <label>Speed <input id="speed" type="number" min="0.5" max="2" step="0.05"></label>
+          <label>Noise scale <input id="noise_scale" type="number" min="0.1" max="2" step="0.01"></label>
+          <label>Length scale <input id="length_scale" type="number" min="0.5" max="2" step="0.05"></label>
+          <label>Silence scale <input id="silence_scale" type="number" min="0" max="2" step="0.05"></label>
+          <label>Max sentences <input id="max_num_sentences" type="number" min="1" max="20"></label>
+          <label>Cleanup days（调用记录保留天数）<input id="cleanup_days" type="number" min="1" max="365"></label>
+          <label class="checkbox-row"><input id="require_auth" type="checkbox"> 开启鉴权（合成需 API Key，推荐）</label>
+        </div>
+        <p class="muted">数据目录（只读）：<input id="data_dir" disabled style="width:60%"></p>
+        <div class="row">
+          <button id="saveConfig" class="primary">保存配置</button>
+          <span id="configStatus" class="status"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 接入管理 -->
+    <section id="tab-admin">
+      <div id="adminLocked" class="locked">请先在右上角登录后管理接入。</div>
+      <div id="adminBox" class="hidden">
+        <h2>API Key</h2>
+        <div class="row">
+          <button id="newKey" class="primary">新建 Key</button>
+          <span class="muted">明文仅创建时显示一次，关闭弹窗后无法再次查看。</span>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>名称</th><th>创建时间</th><th>最近使用</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="keysBody"></tbody>
+        </table>
+        <p id="keysEmpty" class="muted">暂无 Key</p>
+
+        <h2>调用记录</h2>
+        <div id="usageCards" class="cards"></div>
+        <table>
+          <thead><tr><th>时间</th><th>Key</th><th>文本长度</th><th>音频时长</th><th>耗时(ms)</th><th>状态</th><th>错误</th></tr></thead>
+          <tbody id="usageBody"></tbody>
+        </table>
+
+        <h2>磁盘状态</h2>
+        <div class="row">
+          <span id="diskInfo" class="status"></span>
+          <button id="cleanup" class="small">立即清理过期记录</button>
+          <span id="adminStatus" class="status"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

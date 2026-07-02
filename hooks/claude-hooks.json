@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event SessionStart"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event Notification"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event PermissionRequest"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event Stop"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source codex --event SessionStart",
+            "timeout": 30,
+            "statusMessage": "Speaking Codex session start"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source codex --event PermissionRequest",
+            "timeout": 30,
+            "statusMessage": "Speaking Codex permission request"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source codex --event Stop",
+            "timeout": 30,
+            "statusMessage": "Speaking Codex stop"
+          }
+        ]
+      }
+    ]
+  }
+}

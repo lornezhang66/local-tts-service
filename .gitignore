@@ -1,0 +1,16 @@
+# 运行期数据与凭证（SQLite、API Key 摘要、session secret、配置）——绝不提交
+data/
+.smoke_data/
+# 模型文件（体积大，构建时由 build 脚本从兄弟目录拷入）
+models/
+# Python
+__pycache__/
+*.pyc
+.venv/
+# 本地旧配置与测试残留
+/config.json
+/test-output.wav
+# IDE
+.claude/
+hooks/config.json
+hooks/*.wav

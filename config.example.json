@@ -1,0 +1,14 @@
+{
+  "host": "127.0.0.1",
+  "port": 8787,
+  "model_dir": "models/matcha-icefall-zh-en",
+  "vocoder": "models/vocos-16khz-univ.onnx",
+  "threads": 6,
+  "speed": 1.0,
+  "noise_scale": 0.667,
+  "length_scale": 1.0,
+  "silence_scale": 0.2,
+  "max_num_sentences": 1,
+  "cleanup_days": 30,
+  "require_auth": true
+}
