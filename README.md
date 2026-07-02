@@ -54,6 +54,7 @@ Windows：
 .\ttsctl.ps1 status
 .\ttsctl.ps1 hooks install
 .\ttsctl.ps1 test
+.\ttsctl.ps1 say "你好，这是离线 CLI 合成测试。" --output .\data\say.wav
 ```
 
 macOS：
@@ -65,6 +66,7 @@ chmod +x ttsctl.sh
 ./ttsctl.sh status
 ./ttsctl.sh hooks install
 ./ttsctl.sh test
+./ttsctl.sh say "你好，这是离线 CLI 合成测试。" --output ./data/say.wav
 ```
 
 常用命令：
@@ -77,6 +79,8 @@ chmod +x ttsctl.sh
 | `stop` | 停止由 `start --background` 启动的服务 |
 | `status` | 检查 HTTP 服务和 Agent hooks 状态 |
 | `test` | 用 hooks API Key 调用合成接口并保存测试 wav |
+| `say <text>` | 不启动 HTTP 服务，直接加载本地模型离线合成 wav；模型缺失或不完整时会自动下载 |
+| `say <text> --play` | 离线合成后直接播放 |
 | `hooks install` | 自动合并 Codex / Claude Code 朗读 hooks |
 | `hooks uninstall` | 移除 Codex / Claude Code 朗读 hooks |
 | `hooks status` | 查看 hooks 是否已安装 |

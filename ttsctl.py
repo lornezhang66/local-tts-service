@@ -9,11 +9,32 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import platform
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
 PID_FILE = ROOT / "data" / "tts-service.pid"
+MODEL_DIR = ROOT / "models" / "matcha-icefall-zh-en"
+VOCODER_FILE = ROOT / "models" / "vocos-16khz-univ.onnx"
+REQUIRED_MODEL_FILES = [
+    "model-steps-3.onnx",
+    "lexicon.txt",
+    "tokens.txt",
+    "phone-zh.fst",
+    "date-zh.fst",
+    "number-zh.fst",
+]
+DEFAULT_CONFIG = {
+    "model_dir": "models/matcha-icefall-zh-en",
+    "vocoder": "models/vocos-16khz-univ.onnx",
+    "threads": 6,
+    "speed": 1.0,
+    "noise_scale": 0.667,
+    "length_scale": 1.0,
+    "silence_scale": 0.2,
+    "max_num_sentences": 1,
+}
 
 
 def main() -> None:
@@ -29,6 +50,12 @@ def main() -> None:
     sub.add_parser("stop")
     sub.add_parser("status")
     sub.add_parser("test")
+
+    say = sub.add_parser("say")
+    say.add_argument("text")
+    say.add_argument("--output", default=str(ROOT / "data" / "ttsctl-say.wav"))
+    say.add_argument("--speed", type=float)
+    say.add_argument("--play", action="store_true")
 
     hooks = sub.add_parser("hooks")
     hooks_sub = hooks.add_subparsers(dest="hooks_cmd", required=True)
@@ -47,6 +74,8 @@ def main() -> None:
         status()
     elif args.cmd == "test":
         smoke_test()
+    elif args.cmd == "say":
+        say_offline(args.text, Path(args.output), args.speed, args.play)
     elif args.cmd == "hooks":
         if args.hooks_cmd == "install":
             hooks_install()
@@ -117,6 +146,41 @@ def smoke_test() -> None:
     print(f"Test OK: {out}")
 
 
+def say_offline(text: str, output: Path, speed: float | None, play: bool) -> None:
+    ensure_models()
+
+    from tts_engine import ENGINE
+
+    config = load_tts_config()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    wav, duration, sample_rate = ENGINE.synthesize(text, config, speed=speed)
+    output.write_bytes(wav)
+    print(f"Offline TTS OK: {output} ({duration:.2f}s, {sample_rate}Hz)")
+    if play:
+        play_wav(output)
+
+
+def ensure_models() -> None:
+    missing = missing_model_files()
+    if not missing:
+        return
+    print("Models are missing or incomplete:")
+    for path in missing:
+        print(f"- {path}")
+    print("Downloading models...")
+    run([python(), str(ROOT / "scripts" / "download_models.py")])
+    missing_after_download = missing_model_files()
+    if missing_after_download:
+        lines = "\n".join(f"- {path}" for path in missing_after_download)
+        raise SystemExit(f"Model download did not produce required files:\n{lines}")
+
+
+def missing_model_files() -> list[Path]:
+    required = [MODEL_DIR / name for name in REQUIRED_MODEL_FILES]
+    required.append(VOCODER_FILE)
+    return [path for path in required if not path.is_file() or path.stat().st_size == 0]
+
+
 def hooks_install() -> None:
     run([python(), str(ROOT / "scripts" / "install_agent_hooks.py"), "--all"])
 
@@ -172,6 +236,26 @@ def hook_api_key() -> str:
     if not path.exists():
         return ""
     return json.loads(path.read_text(encoding="utf-8")).get("api_key", "")
+
+
+def load_tts_config() -> dict:
+    path = ROOT / "data" / "config.json"
+    config = dict(DEFAULT_CONFIG)
+    if path.exists():
+        config.update(json.loads(path.read_text(encoding="utf-8")))
+    return config
+
+
+def play_wav(path: Path) -> None:
+    system = platform.system()
+    if system == "Windows":
+        import winsound
+
+        winsound.PlaySound(str(path), winsound.SND_FILENAME)
+    elif system == "Darwin":
+        subprocess.run(["afplay", str(path)], check=False)
+    else:
+        subprocess.run(["aplay", str(path)], check=False)
 
 
 def request_json(url: str) -> dict:
