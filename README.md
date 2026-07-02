@@ -42,6 +42,45 @@ docker compose down            # 停止（data/ 数据保留）
 docker compose up -d --build   # 改代码后重建
 ```
 
+## CLI
+
+本服务的本机入口是 `ttsctl`。Windows 使用 `ttsctl.ps1`，macOS 使用 `ttsctl.sh`。
+
+Windows：
+
+```powershell
+.\ttsctl.ps1 install
+.\ttsctl.ps1 start --background
+.\ttsctl.ps1 status
+.\ttsctl.ps1 hooks install
+.\ttsctl.ps1 test
+```
+
+macOS：
+
+```bash
+chmod +x ttsctl.sh
+./ttsctl.sh install
+./ttsctl.sh start --background
+./ttsctl.sh status
+./ttsctl.sh hooks install
+./ttsctl.sh test
+```
+
+常用命令：
+
+| 命令 | 作用 |
+|---|---|
+| `install` | 安装 Python 依赖并下载模型 |
+| `start` | 前台启动服务 |
+| `start --background` | 后台启动服务并写入 pid |
+| `stop` | 停止由 `start --background` 启动的服务 |
+| `status` | 检查 HTTP 服务和 Agent hooks 状态 |
+| `test` | 用 hooks API Key 调用合成接口并保存测试 wav |
+| `hooks install` | 自动合并 Codex / Claude Code 朗读 hooks |
+| `hooks uninstall` | 移除 Codex / Claude Code 朗读 hooks |
+| `hooks status` | 查看 hooks 是否已安装 |
+
 ## 非 Docker 本地开发
 
 ```powershell
@@ -82,14 +121,14 @@ curl -X POST http://127.0.0.1:8787/api/synthesize \
 Windows 一键安装：
 
 ```powershell
-.\scripts\install_agent_hooks.ps1
+.\ttsctl.ps1 hooks install
 ```
 
 macOS 一键安装：
 
 ```bash
-chmod +x scripts/install_agent_hooks.sh hooks/agent-tts-hook.sh
-./scripts/install_agent_hooks.sh
+chmod +x ttsctl.sh hooks/agent-tts-hook.sh
+./ttsctl.sh hooks install
 ```
 
 安装脚本会：
