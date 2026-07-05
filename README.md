@@ -45,12 +45,12 @@ docker compose up -d --build   # 改代码后重建
 ## CLI
 
 本服务的本机入口是 `ttsctl`。Windows 使用 `ttsctl.ps1`，macOS 使用 `ttsctl.sh`。
+CLI 默认不启动 Web/API 端口；只有 Docker 部署或显式执行 `start` 时才监听 `127.0.0.1:8787`。
 
 Windows：
 
 ```powershell
 .\ttsctl.ps1 install
-.\ttsctl.ps1 start --background
 .\ttsctl.ps1 status
 .\ttsctl.ps1 hooks install
 .\ttsctl.ps1 test
@@ -62,7 +62,6 @@ macOS：
 ```bash
 chmod +x ttsctl.sh
 ./ttsctl.sh install
-./ttsctl.sh start --background
 ./ttsctl.sh status
 ./ttsctl.sh hooks install
 ./ttsctl.sh test
@@ -74,11 +73,11 @@ chmod +x ttsctl.sh
 | 命令 | 作用 |
 |---|---|
 | `install` | 安装 Python 依赖并下载模型 |
-| `start` | 前台启动服务 |
-| `start --background` | 后台启动服务并写入 pid |
+| `start` | 前台启动 Web/API 服务 |
+| `start --background` | 后台启动 Web/API 服务并写入 pid |
 | `stop` | 停止由 `start --background` 启动的服务 |
 | `status` | 检查 HTTP 服务和 Agent hooks 状态 |
-| `test` | 用 hooks API Key 调用合成接口并保存测试 wav |
+| `test` | 不启动 HTTP 服务，离线合成并保存测试 wav |
 | `say <text>` | 不启动 HTTP 服务，直接加载本地模型离线合成 wav；模型缺失或不完整时会自动下载 |
 | `say <text> --play` | 离线合成后直接播放 |
 | `hooks install` | 自动合并 Codex / Claude Code 朗读 hooks |

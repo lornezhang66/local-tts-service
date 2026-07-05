@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import re
 import shutil
 from datetime import datetime
@@ -58,6 +59,7 @@ def read_first_run_api_key() -> str:
 def install_codex_hooks() -> None:
     target = CODEX_HOME / "hooks.json"
     source = json.loads((HOOKS / "codex-hooks.json").read_text(encoding="utf-8"))
+    source = materialize_hook_commands(source, "codex")
     current = read_json(target, {"hooks": {}})
     current["hooks"] = merge_hooks(current.get("hooks", {}), source["hooks"])
     backup(target)
@@ -69,6 +71,7 @@ def install_codex_hooks() -> None:
 def install_claude_hooks() -> None:
     target = CLAUDE_HOME / "settings.json"
     source = json.loads((HOOKS / "claude-hooks.json").read_text(encoding="utf-8"))
+    source = materialize_hook_commands(source, "claude")
     current = read_json(target, {})
     current["hooks"] = merge_hooks(current.get("hooks", {}), source["hooks"])
     backup(target)
@@ -92,6 +95,25 @@ def merge_hooks(current: dict[str, Any], incoming: dict[str, Any]) -> dict[str, 
             if any(command not in existing_commands for command in commands):
                 result[event].append(group)
     return result
+
+
+def materialize_hook_commands(data: dict[str, Any], source: str) -> dict[str, Any]:
+    for event, groups in data.get("hooks", {}).items():
+        for group in groups:
+            for hook in group.get("hooks", []):
+                if isinstance(hook, dict) and "agent-tts-hook" in str(hook.get("command", "")):
+                    hook["command"] = hook_command(source, event)
+    return data
+
+
+def hook_command(source: str, event: str) -> str:
+    if platform.system() == "Windows":
+        script = HOOKS / "agent-tts-hook.ps1"
+        return (
+            "powershell -NoProfile -ExecutionPolicy Bypass "
+            f"-File {script} --source {source} --event {event}"
+        )
+    return f"{HOOKS / 'agent-tts-hook.sh'} --source {source} --event {event}"
 
 
 def read_json(path: Path, default: dict[str, Any]) -> dict[str, Any]:

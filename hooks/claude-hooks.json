@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event SessionStart"
+            "command": "agent-tts-hook --source claude --event SessionStart"
           }
         ]
       }
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event Notification"
+            "command": "agent-tts-hook --source claude --event Notification"
           }
         ]
       }
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event PermissionRequest"
+            "command": "agent-tts-hook --source claude --event PermissionRequest"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\18660\\work_space_ai\\07codex_default\\local-tts-service\\hooks\\agent-tts-hook.ps1 --source claude --event Stop"
+            "command": "agent-tts-hook --source claude --event Stop"
           }
         ]
       }

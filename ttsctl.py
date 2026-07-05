@@ -89,7 +89,7 @@ def install() -> None:
     run([python(), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"])
     run([python(), "-m", "pip", "install", "-r", str(ROOT / "requirements.txt")])
     run([python(), str(ROOT / "scripts" / "download_models.py")])
-    print("Install complete. Run: ttsctl start --background")
+    print("Install complete. Run: ttsctl say '你好' --play")
 
 
 def start_service(background: bool, open_browser: bool) -> None:
@@ -100,9 +100,20 @@ def start_service(background: bool, open_browser: bool) -> None:
         run(args)
         return
     ROOT.joinpath("data").mkdir(exist_ok=True)
-    proc = subprocess.Popen(args, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    log_path = ROOT / "data" / "tts-service.log"
+    log = log_path.open("ab")
+    proc = subprocess.Popen(
+        args,
+        cwd=ROOT,
+        stdout=log,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
     PID_FILE.write_text(str(proc.pid), encoding="utf-8")
     time.sleep(2)
+    if proc.poll() is not None:
+        PID_FILE.unlink(missing_ok=True)
+        raise SystemExit(f"Service failed to start. See log: {log_path}")
     print(f"Started Local TTS Service, pid={proc.pid}")
 
 
@@ -120,6 +131,7 @@ def stop_service() -> None:
 
 
 def status() -> None:
+    print("Mode: cli (HTTP service starts only via: ttsctl start)")
     try:
         data = request_json("http://127.0.0.1:8787/api/health")
         print(f"Service: {'ok' if data.get('ok') else 'unknown'}")
@@ -129,21 +141,8 @@ def status() -> None:
 
 
 def smoke_test() -> None:
-    key = hook_api_key()
-    if not key:
-        raise SystemExit("Missing hooks/config.json api_key. Run: ttsctl hooks install")
-    req = urllib.request.Request(
-        "http://127.0.0.1:8787/api/synthesize",
-        data=json.dumps({"text": "本地 TTS 服务测试成功。", "speed": 1.0}).encode("utf-8"),
-        headers={"Content-Type": "application/json", "X-API-Key": key},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=30) as res:
-        wav = res.read()
     out = ROOT / "data" / "ttsctl-test.wav"
-    out.parent.mkdir(exist_ok=True)
-    out.write_bytes(wav)
-    print(f"Test OK: {out}")
+    say_offline("本地 TTS CLI 测试成功。", out, None, False)
 
 
 def say_offline(text: str, output: Path, speed: float | None, play: bool) -> None:
@@ -259,8 +258,18 @@ def play_wav(path: Path) -> None:
 
 
 def request_json(url: str) -> dict:
+    os.environ["NO_PROXY"] = append_no_proxy(os.environ.get("NO_PROXY", ""))
+    os.environ["no_proxy"] = append_no_proxy(os.environ.get("no_proxy", ""))
     with urllib.request.urlopen(url, timeout=3) as res:
         return json.loads(res.read().decode("utf-8"))
+
+
+def append_no_proxy(value: str) -> str:
+    hosts = [item for item in value.split(",") if item]
+    for host in ("127.0.0.1", "localhost"):
+        if host not in hosts:
+            hosts.append(host)
+    return ",".join(hosts)
 
 
 def backup(path: Path) -> None:

@@ -1,6 +1,7 @@
 {
   "service_url": "http://127.0.0.1:8787",
   "api_key": "",
+  "mode": "cli",
   "enabled": true,
   "cooldown_seconds": 6,
   "messages": {
