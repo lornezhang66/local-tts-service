@@ -1,9 +1,14 @@
-# Local TTS Service
+# Local TTS Service - Offline Chinese / English TTS CLI and API
 
-把 `sherpa-onnx + matcha-icefall-zh-en` 双语模型封装成**本地常驻 HTTP 服务**，自带 API Key 鉴权与调用记录，朗读文本不出本机。供 Obsidian、Codex hooks、Claude Code hooks 或其他本机工具调用。
+Local TTS Service is an **offline local text-to-speech service and CLI** for Chinese / English speech synthesis. It wraps `sherpa-onnx` and the `matcha-icefall-zh-en` model into a local `ttsctl` command, optional HTTP API, Docker service, and Codex / Claude Code / Obsidian TTS integration.
+
+把 `sherpa-onnx + matcha-icefall-zh-en` 双语模型封装成**本地 TTS CLI 与可选 HTTP 服务**，自带 API Key 鉴权与调用记录，朗读文本不出本机。供 Obsidian、Codex hooks、Claude Code hooks 或其他本机工具调用。
+
+Keywords: local TTS, offline text-to-speech, Chinese TTS, English TTS, sherpa-onnx, Matcha TTS, `ttsctl`, Codex TTS hook, Claude Code TTS hook, Obsidian TTS.
 
 ## 特性
 
+- **本地离线 TTS CLI**：`ttsctl say` 直接合成 wav，不需要启动 Web/API 服务。
 - **一键 Docker 部署**：模型打进镜像，完全离线可用，`docker compose up -d` 即跑。
 - **API Key 鉴权**：为每个客户端颁发独立密钥，可启停 / 删除，合成接口必须带 key。
 - **调用记录**：每次合成记录文本长度、音频时长、耗时、成功 / 失败，按 key 汇总，可观测。
