@@ -1,4 +1,2 @@
 sherpa-onnx==1.13.3
 soundfile==0.14.0
-huggingface-hub==1.21.0
-socksio==1.0.0
