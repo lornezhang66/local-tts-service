@@ -4,13 +4,13 @@ services:
     image: local-tts-service:latest
     container_name: local-tts-service
     ports:
-      - "8787:8787"
+      - "51273:51273"
     volumes:
       # 整个 data/ 挂出：SQLite、凭证、配置在重建/升级容器后保留
       - ./data:/app/data
     environment:
       - TTS_HOST=0.0.0.0
-      - TTS_PORT=8787
+      - TTS_PORT=51273
       - TTS_REQUIRE_AUTH=true
       # 调用记录保留天数（默认 30）；改值后清理线程下个周期生效，也可页面手动清理
       # - TTS_CLEANUP_DAYS=30

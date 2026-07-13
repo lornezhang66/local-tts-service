@@ -28,7 +28,7 @@ STATIC_DIR = ROOT / "static"
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "host": "127.0.0.1",
-    "port": 8787,
+    "port": 51273,
     "model_dir": "models/matcha-icefall-zh-en",
     "vocoder": "models/vocos-16khz-univ.onnx",
     "threads": 6,

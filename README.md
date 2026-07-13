@@ -8,7 +8,7 @@ Keywords: local TTS, offline text-to-speech, Chinese TTS, English TTS, sherpa-on
 
 ## 特性
 
-- **本地离线 TTS CLI**：`ttsctl say` 直接合成 wav，不需要启动 Web/API 服务。
+- **本地离线 TTS CLI**：`ttsctl say` 按需启动本机 daemon 并复用已加载模型，无需手动管理服务。
 - **一键 Docker 部署**：模型打进镜像，完全离线可用，`docker compose up -d` 即跑。
 - **API Key 鉴权**：为每个客户端颁发独立密钥，可启停 / 删除，合成接口必须带 key。
 - **调用记录**：每次合成记录文本长度、音频时长、耗时、成功 / 失败，按 key 汇总，可观测。
@@ -37,7 +37,7 @@ chmod +x scripts/build_macos.sh
 
 脚本会：拷贝模型 → 构建镜像 → 启动容器 → 打印**首次启动凭证**（管理员用户名 / 密码、默认 API Key），同时写入 `data/first-run-credentials.txt`。
 
-启动后打开 http://127.0.0.1:8787，右上角登录后即可管理。
+启动后打开 http://127.0.0.1:51273，右上角登录后即可管理。
 
 后续命令：
 
@@ -50,7 +50,7 @@ docker compose up -d --build   # 改代码后重建
 ## CLI
 
 本服务的本机入口是 `ttsctl`。Windows 使用 `ttsctl.ps1`，macOS 使用 `ttsctl.sh`。
-CLI 默认不启动 Web/API 端口；只有 Docker 部署或显式执行 `start` 时才监听 `127.0.0.1:8787`。
+`ttsctl say` 首次调用会按需启动 `127.0.0.1:51273` 上的本机 daemon，后续调用复用已加载模型。也可以显式执行 `start` 管理服务。
 
 Windows：
 
@@ -82,8 +82,8 @@ chmod +x ttsctl.sh
 | `start --background` | 后台启动 Web/API 服务并写入 pid |
 | `stop` | 停止由 `start --background` 启动的服务 |
 | `status` | 检查 HTTP 服务和 Agent hooks 状态 |
-| `test` | 不启动 HTTP 服务，离线合成并保存测试 wav |
-| `say <text>` | 不启动 HTTP 服务，直接加载本地模型离线合成 wav；模型缺失或不完整时会自动下载 |
+| `test` | 按需启动本机 daemon，离线合成并保存测试 wav |
+| `say <text>` | 自动确保本机 daemon 已启动并合成 wav；模型缺失或不完整时会自动下载 |
 | `say <text> --play` | 离线合成后直接播放 |
 | `hooks install` | 自动合并 Codex / Claude Code 朗读 hooks |
 | `hooks uninstall` | 移除 Codex / Claude Code 朗读 hooks |
@@ -102,7 +102,7 @@ cd local-tts-service
 合成接口需 API Key（`X-API-Key` 或 `Authorization: Bearer <key>`）：
 
 ```bash
-curl -X POST http://127.0.0.1:8787/api/synthesize \
+curl -X POST http://127.0.0.1:51273/api/synthesize \
   -H "X-API-Key: tts-xxxx" \
   -H "Content-Type: application/json" \
   -d "{\"text\":\"你好\",\"speed\":1.0}" --output out.wav

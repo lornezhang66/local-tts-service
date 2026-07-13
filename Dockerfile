@@ -20,10 +20,10 @@ COPY models/ ./models/
 
 # 容器内对外监听 0.0.0.0；鉴权默认开启。host/port/鉴权/清理天数均可被 compose env 覆盖
 ENV TTS_HOST=0.0.0.0 \
-    TTS_PORT=8787 \
+    TTS_PORT=51273 \
     TTS_REQUIRE_AUTH=true
 
-EXPOSE 8787
+EXPOSE 51273
 # data/ 挂载卷：SQLite、API Key 摘要、session secret、运行期配置、首启凭证
 VOLUME ["/app/data"]
 

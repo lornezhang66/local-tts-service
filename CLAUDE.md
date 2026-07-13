@@ -35,8 +35,8 @@ docker compose up -d --build    # 改代码后重建
 
 **冒烟测试**：
 ```bash
-curl http://127.0.0.1:8787/api/health
-curl -X POST http://127.0.0.1:8787/api/synthesize -H "X-API-Key: <key>" -H "Content-Type: application/json" -d "{\"text\":\"你好\"}" --output out.wav
+curl http://127.0.0.1:51273/api/health
+curl -X POST http://127.0.0.1:51273/api/synthesize -H "X-API-Key: <key>" -H "Content-Type: application/json" -d "{\"text\":\"你好\"}" --output out.wav
 ```
 
 无自动化测试。鉴权 / 合成 / 管理链路用 curl 或管理页手动验证。

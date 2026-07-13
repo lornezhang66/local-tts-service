@@ -35,6 +35,7 @@ DEFAULT_CONFIG = {
     "silence_scale": 0.2,
     "max_num_sentences": 1,
 }
+SERVICE_URL = "http://127.0.0.1:51273"
 
 
 def main() -> None:
@@ -92,7 +93,7 @@ def install() -> None:
     print("Install complete. Run: ttsctl say '你好' --play")
 
 
-def start_service(background: bool, open_browser: bool) -> None:
+def start_service(background: bool, open_browser: bool, local_daemon: bool = False) -> None:
     args = [python(), str(ROOT / "server.py")]
     if open_browser:
         args.append("--open")
@@ -102,12 +103,18 @@ def start_service(background: bool, open_browser: bool) -> None:
     ROOT.joinpath("data").mkdir(exist_ok=True)
     log_path = ROOT / "data" / "tts-service.log"
     log = log_path.open("ab")
+    env = os.environ.copy()
+    if local_daemon:
+        env["TTS_HOST"] = "127.0.0.1"
+        env["TTS_PORT"] = "51273"
+        env["TTS_REQUIRE_AUTH"] = "false"
     proc = subprocess.Popen(
         args,
         cwd=ROOT,
         stdout=log,
         stderr=subprocess.STDOUT,
         start_new_session=True,
+        env=env,
     )
     PID_FILE.write_text(str(proc.pid), encoding="utf-8")
     time.sleep(2)
@@ -131,9 +138,9 @@ def stop_service() -> None:
 
 
 def status() -> None:
-    print("Mode: cli (HTTP service starts only via: ttsctl start)")
+    print("Mode: local daemon (started on demand by: ttsctl say)")
     try:
-        data = request_json("http://127.0.0.1:8787/api/health")
+        data = request_json(f"{SERVICE_URL}/api/health")
         print(f"Service: {'ok' if data.get('ok') else 'unknown'}")
     except Exception as exc:
         print(f"Service: offline ({exc})")
@@ -146,17 +153,58 @@ def smoke_test() -> None:
 
 
 def say_offline(text: str, output: Path, speed: float | None, play: bool) -> None:
-    ensure_models()
-
-    from tts_engine import ENGINE
-
-    config = load_tts_config()
     output.parent.mkdir(parents=True, exist_ok=True)
-    wav, duration, sample_rate = ENGINE.synthesize(text, config, speed=speed)
+    wav, duration, sample_rate = synthesize_audio(text, speed)
     output.write_bytes(wav)
-    print(f"Offline TTS OK: {output} ({duration:.2f}s, {sample_rate}Hz)")
+    print(f"Local TTS OK: {output} ({duration:.2f}s, {sample_rate}Hz)")
     if play:
         play_wav(output)
+
+
+def synthesize_audio(text: str, speed: float | None) -> tuple[bytes, float, int]:
+    ensure_models()
+    ensure_service()
+    try:
+        return request_audio(text, speed)
+    except urllib.error.HTTPError as exc:
+        if exc.code != 401:
+            raise
+        from tts_engine import ENGINE
+
+        return ENGINE.synthesize(text, load_tts_config(), speed=speed)
+
+
+def ensure_service() -> None:
+    try:
+        if request_json(f"{SERVICE_URL}/api/health").get("ok"):
+            return
+    except (OSError, urllib.error.URLError):
+        pass
+    start_service(background=True, open_browser=False, local_daemon=True)
+    for _ in range(30):
+        try:
+            if request_json(f"{SERVICE_URL}/api/health").get("ok"):
+                return
+        except (OSError, urllib.error.URLError):
+            time.sleep(0.1)
+    raise RuntimeError(f"Local TTS daemon did not become ready at {SERVICE_URL}")
+
+
+def request_audio(text: str, speed: float | None) -> tuple[bytes, float, int]:
+    payload: dict[str, object] = {"text": text}
+    if speed is not None:
+        payload["speed"] = speed
+    request = urllib.request.Request(
+        f"{SERVICE_URL}/api/synthesize",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=120) as response:
+        wav = response.read()
+        duration = float(response.headers.get("X-Audio-Duration", "0"))
+        sample_rate = int(response.headers.get("X-Sample-Rate", "0"))
+    return wav, duration, sample_rate
 
 
 def ensure_models() -> None:

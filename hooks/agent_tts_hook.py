@@ -58,7 +58,7 @@ def load_config() -> dict[str, Any]:
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
     config["api_key"] = os.environ.get("LOCAL_TTS_API_KEY") or config.get("api_key", "")
     config["mode"] = os.environ.get("LOCAL_TTS_MODE") or config.get("mode", "cli")
-    config["service_url"] = os.environ.get("LOCAL_TTS_SERVICE_URL") or config.get("service_url", "http://127.0.0.1:8787")
+    config["service_url"] = os.environ.get("LOCAL_TTS_SERVICE_URL") or config.get("service_url", "http://127.0.0.1:51273")
     return config
 
 
@@ -241,10 +241,9 @@ def synthesize(text: str, config: dict[str, Any]) -> Path:
 
 def synthesize_cli(text: str, config: dict[str, Any]) -> Path:
     sys.path.insert(0, str(ROOT.parent))
-    from tts_engine import ENGINE
-    from ttsctl import load_tts_config
+    from ttsctl import synthesize_audio
 
-    wav, _, _ = ENGINE.synthesize(text, load_tts_config(), speed=config.get("speed"))
+    wav, _, _ = synthesize_audio(text, config.get("speed"))
     path = Path(tempfile.gettempdir()) / f"agent-tts-{int(time.time() * 1000)}.wav"
     path.write_bytes(wav)
     return path

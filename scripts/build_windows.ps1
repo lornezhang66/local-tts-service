@@ -28,6 +28,6 @@ Start-Sleep -Seconds 5
 & $DOCKER_COMPOSE logs --tail 14 tts
 
 Write-Host ""
-Write-Host "服务地址: http://127.0.0.1:8787"
+Write-Host "服务地址: http://127.0.0.1:51273"
 Write-Host "管理页:   浏览器打开上面地址 → 右上角登录（用上面的管理员密码）→ 接入管理 创建/查看 API Key"
 Write-Host "停服务:   C:\Program Files\Docker\Docker\resources\bin\docker-compose.exe down    （data/ 数据保留）"

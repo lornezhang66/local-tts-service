@@ -3,7 +3,7 @@
 这里放 Codex / Claude Code 的朗读 hook。它不实现 TTS 服务，只调用本目录已有服务：
 
 ```text
-POST http://127.0.0.1:8787/api/synthesize
+POST http://127.0.0.1:51273/api/synthesize
 X-API-Key: tts-xxxx
 ```
 
@@ -19,7 +19,7 @@ Copy-Item hooks\config.example.json hooks\config.json
 
 ```json
 {
-  "service_url": "http://127.0.0.1:8787",
+  "service_url": "http://127.0.0.1:51273",
   "api_key": "tts-xxxx"
 }
 ```
@@ -28,7 +28,7 @@ Copy-Item hooks\config.example.json hooks\config.json
 
 ```powershell
 $env:LOCAL_TTS_API_KEY="tts-xxxx"
-$env:LOCAL_TTS_SERVICE_URL="http://127.0.0.1:8787"
+$env:LOCAL_TTS_SERVICE_URL="http://127.0.0.1:51273"
 ```
 
 ## 测试

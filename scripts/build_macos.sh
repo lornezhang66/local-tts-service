@@ -23,6 +23,6 @@ sleep 5
 docker compose logs --tail 14 tts
 
 echo ""
-echo "服务地址: http://127.0.0.1:8787"
+echo "服务地址: http://127.0.0.1:51273"
 echo "管理页:   浏览器打开上面地址 → 右上角登录 → 接入管理 创建/查看 API Key"
 echo "停服务:   docker compose down    （data/ 数据保留）"

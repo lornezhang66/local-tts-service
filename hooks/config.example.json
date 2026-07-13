@@ -1,5 +1,5 @@
 {
-  "service_url": "http://127.0.0.1:8787",
+  "service_url": "http://127.0.0.1:51273",
   "api_key": "",
   "mode": "cli",
   "enabled": true,
