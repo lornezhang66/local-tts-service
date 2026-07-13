@@ -82,6 +82,7 @@ chmod +x ttsctl.sh
 | `start --background` | 后台启动 Web/API 服务并写入 pid |
 | `stop` | 停止由 `start --background` 启动的服务 |
 | `status` | 检查 HTTP 服务和 Agent hooks 状态 |
+| `ensure` | 检查模型并按需启动本机 daemon，供桌面客户端调用 |
 | `test` | 按需启动本机 daemon，离线合成并保存测试 wav |
 | `say <text>` | 自动确保本机 daemon 已启动并合成 wav；模型缺失或不完整时会自动下载 |
 | `say <text> --play` | 离线合成后直接播放 |
@@ -110,7 +111,7 @@ curl -X POST http://127.0.0.1:51273/api/synthesize \
 
 `/api/say` 是 `/api/synthesize` 的别名。响应头带 `X-Audio-Duration`（秒）、`X-Sample-Rate`。
 
-健康检查（免鉴权）：`GET /api/health`
+健康检查（免鉴权）：`GET /api/health`，返回 `{"ok": true, "protocol": 1}` 供桌面客户端协商调用协议。
 
 管理接口（管理员 session cookie 鉴权，浏览器里操作即可）：API Key 增删、调用记录查看、配置修改、磁盘清理。
 

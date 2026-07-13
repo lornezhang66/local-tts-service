@@ -99,7 +99,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         p = self._path_only()
         if p == "/api/health":
-            self.send_json({"ok": True})
+            self.send_json({"ok": True, "protocol": 1})
             return
 
         if p == "/api/config":

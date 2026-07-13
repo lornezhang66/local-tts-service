@@ -50,6 +50,7 @@ def main() -> None:
 
     sub.add_parser("stop")
     sub.add_parser("status")
+    sub.add_parser("ensure")
     sub.add_parser("test")
 
     say = sub.add_parser("say")
@@ -73,6 +74,10 @@ def main() -> None:
         stop_service()
     elif args.cmd == "status":
         status()
+    elif args.cmd == "ensure":
+        ensure_models()
+        ensure_service()
+        print(f"Local TTS daemon ready: {SERVICE_URL}")
     elif args.cmd == "test":
         smoke_test()
     elif args.cmd == "say":
