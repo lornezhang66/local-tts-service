@@ -20,3 +20,4 @@ if (-not (Test-Path (Join-Path $AppDir "ttsctl.ps1"))) {
 }
 
 & (Join-Path $AppDir "ttsctl.ps1") install
+exit $LASTEXITCODE
